@@ -2,6 +2,7 @@ package Request
 
 import (
 	"fmt"
+	"io"
 	_ "io/ioutil"
 	"net/http"
 	"strings"
@@ -30,17 +31,19 @@ func Send(method string, uri string, body string, wg *sync.WaitGroup) {
 		fmt.Println(err)
 		return
 	}
-	defer resp.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			panic(err)
+		}
+	}(resp.Body)
 
 	/*respBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}*/
-
 	fmt.Println("response Status : ", resp.Status)
-	/*fmt.Println("response Headers : ", resp.Header)
-	fmt.Println("response Body : ", string(respBody))*/
 	counter++
 	wg.Done()
 }
